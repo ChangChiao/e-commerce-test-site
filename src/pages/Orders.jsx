@@ -13,9 +13,15 @@ export default function Orders() {
       const payments = ['信用卡', '貨到付款', 'ATM轉帳', 'LINE Pay', '街口支付'];
 
       const randomOrders = [];
+      const currentMonth = new Date().getMonth() + 1; // 獲取當前月份 (1-12)
+      
       for (let i = 1; i <= 20; i++) {
-        const date = new Date();
-        date.setDate(date.getDate() - Math.floor(Math.random() * 30));
+        // 隨機生成月份 (1 到當前月份)
+        const month = Math.floor(Math.random() * currentMonth) + 1;
+        
+        // 根據月份確定該月的最大天數
+        const daysInMonth = new Date(2025, month, 0).getDate();
+        const day = Math.floor(Math.random() * daysInMonth) + 1;
         
         randomOrders.push({
           id: i,
@@ -23,7 +29,7 @@ export default function Orders() {
           address: `${cities[Math.floor(Math.random() * cities.length)]}${districts[Math.floor(Math.random() * districts.length)]}${Math.floor(Math.random() * 999) + 1}號`,
           phone: `09${Math.floor(Math.random() * 100000000).toString().padStart(8, '0')}`,
           items: products[Math.floor(Math.random() * products.length)],
-          orderDate: date.toLocaleDateString('zh-TW'),
+          orderDate: `2025/${String(month).padStart(2, '0')}/${String(day).padStart(2, '0')}`,
           amount: Math.floor(Math.random() * 50000) + 5000,
           paymentMethod: payments[Math.floor(Math.random() * payments.length)],
           taxId: Math.random() > 0.7 ? Math.floor(Math.random() * 90000000 + 10000000).toString() : '-'
