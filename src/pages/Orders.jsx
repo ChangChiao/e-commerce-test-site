@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 
 export default function Orders() {
   const [orders, setOrders] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
 
   useEffect(() => {
     // 生成隨機訂單資料
@@ -15,7 +17,7 @@ export default function Orders() {
       const randomOrders = [];
       const currentMonth = new Date().getMonth() + 1; // 獲取當前月份 (1-12)
       
-      for (let i = 1; i <= 20; i++) {
+      for (let i = 1; i <= 100; i++) {
         // 隨機生成月份 (1 到當前月份)
         const month = Math.floor(Math.random() * currentMonth) + 1;
         
@@ -40,6 +42,42 @@ export default function Orders() {
 
     setOrders(generateOrders());
   }, []);
+
+  // 計算分頁資料
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentOrders = orders.slice(indexOfFirstItem, indexOfLastItem);
+  const totalPages = Math.ceil(orders.length / itemsPerPage);
+
+  // 處理頁面切換
+  const handlePageChange = (pageNumber) => {
+    setCurrentPage(pageNumber);
+  };
+
+  // 處理每頁筆數變更
+  const handleItemsPerPageChange = (e) => {
+    setItemsPerPage(Number(e.target.value));
+    setCurrentPage(1); // 重置到第一頁
+  };
+
+  // 生成頁碼數組
+  const getPageNumbers = () => {
+    const pageNumbers = [];
+    const maxVisiblePages = 5;
+    
+    let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+    let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+    
+    if (endPage - startPage < maxVisiblePages - 1) {
+      startPage = Math.max(1, endPage - maxVisiblePages + 1);
+    }
+    
+    for (let i = startPage; i <= endPage; i++) {
+      pageNumbers.push(i);
+    }
+    
+    return pageNumbers;
+  };
 
   return (
     <div>
@@ -80,7 +118,7 @@ export default function Orders() {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {orders.map((order) => (
+              {currentOrders.map((order) => (
                 <tr key={order.id} className="order-row hover:bg-gray-50" data-order-id={order.id}>
                   <td className="order-data order-id px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                     #{order.id.toString().padStart(5, '0')}
@@ -124,12 +162,92 @@ export default function Orders() {
         </div>
       </div>
       
-      <div className="mt-6 flex justify-between items-center text-sm text-gray-600">
-        <div>
-          顯示 1-20 筆，共 20 筆訂單
+      <div className="mt-6 space-y-4">
+        <div className="flex justify-between items-center">
+          <div className="flex items-center space-x-4">
+            <label className="text-sm text-gray-600">
+              每頁顯示：
+              <select
+                value={itemsPerPage}
+                onChange={handleItemsPerPageChange}
+                className="ml-2 border border-gray-300 rounded px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value={10}>10 筆</option>
+                <option value={20}>20 筆</option>
+                <option value={50}>50 筆</option>
+              </select>
+            </label>
+            <div className="text-sm text-gray-600">
+              顯示 {indexOfFirstItem + 1}-{Math.min(indexOfLastItem, orders.length)} 筆，共 {orders.length} 筆訂單
+            </div>
+          </div>
+          <div className="text-sm text-gray-600">
+            總金額：NT$ {orders.reduce((sum, order) => sum + order.amount, 0).toLocaleString()}
+          </div>
         </div>
-        <div className="text-right">
-          總金額：NT$ {orders.reduce((sum, order) => sum + order.amount, 0).toLocaleString()}
+        
+        <div className="flex justify-center items-center space-x-1">
+          <button
+            onClick={() => handlePageChange(currentPage - 1)}
+            disabled={currentPage === 1}
+            className={`px-3 py-1 rounded text-sm ${
+              currentPage === 1
+                ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50'
+            }`}
+          >
+            上一頁
+          </button>
+          
+          {currentPage > 3 && (
+            <>
+              <button
+                onClick={() => handlePageChange(1)}
+                className="px-3 py-1 rounded text-sm bg-white border border-gray-300 text-gray-700 hover:bg-gray-50"
+              >
+                1
+              </button>
+              {currentPage > 4 && <span className="px-2 text-gray-500">...</span>}
+            </>
+          )}
+          
+          {getPageNumbers().map(number => (
+            <button
+              key={number}
+              onClick={() => handlePageChange(number)}
+              className={`px-3 py-1 rounded text-sm ${
+                currentPage === number
+                  ? 'bg-blue-500 text-white'
+                  : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50'
+              }`}
+            >
+              {number}
+            </button>
+          ))}
+          
+          {currentPage < totalPages - 2 && (
+            <>
+              {currentPage < totalPages - 3 && <span className="px-2 text-gray-500">...</span>}
+              <button
+                onClick={() => handlePageChange(totalPages)}
+                className="px-3 py-1 rounded text-sm bg-white border border-gray-300 text-gray-700 hover:bg-gray-50"
+              >
+                {totalPages}
+              </button>
+            </>
+          )}
+          
+          <button
+            onClick={() => handlePageChange(currentPage + 1)}
+            disabled={currentPage === totalPages}
+            className={`px-3 py-1 rounded text-sm ${
+              currentPage === totalPages
+                ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50'
+            }`}
+          >
+            下一頁
+          </button>
         </div>
       </div>
     </div>
