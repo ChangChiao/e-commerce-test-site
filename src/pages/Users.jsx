@@ -10,7 +10,9 @@ export default function Users() {
   ]);
 
   const [showModal, setShowModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [editingUser, setEditingUser] = useState(null);
+  const [deletingUser, setDeletingUser] = useState(null);
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -30,9 +32,16 @@ export default function Users() {
     setShowModal(true);
   };
 
-  const handleDelete = (id) => {
-    if (window.confirm('確定要刪除此使用者嗎？')) {
-      setUsers(users.filter(user => user.id !== id));
+  const handleDelete = (user) => {
+    setDeletingUser(user);
+    setShowDeleteModal(true);
+  };
+
+  const confirmDelete = () => {
+    if (deletingUser) {
+      setUsers(users.filter(user => user.id !== deletingUser.id));
+      setShowDeleteModal(false);
+      setDeletingUser(null);
     }
   };
 
@@ -125,7 +134,7 @@ export default function Users() {
                     編輯
                   </button>
                   <button
-                    onClick={() => handleDelete(user.id)}
+                    onClick={() => handleDelete(user)}
                     className="text-red-600 hover:text-red-900"
                   >
                     刪除
@@ -219,6 +228,36 @@ export default function Users() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {showDeleteModal && deletingUser && (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center">
+          <div className="bg-white rounded-lg p-8 w-96">
+            <h2 className="text-xl font-bold mb-4">確認刪除</h2>
+            
+            <p className="text-gray-600 mb-6">
+              確定要刪除使用者「{deletingUser.name}」嗎？此操作無法復原。
+            </p>
+            
+            <div className="flex justify-end space-x-2">
+              <button
+                onClick={() => {
+                  setShowDeleteModal(false);
+                  setDeletingUser(null);
+                }}
+                className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50"
+              >
+                取消
+              </button>
+              <button
+                onClick={confirmDelete}
+                className="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600"
+              >
+                確認刪除
+              </button>
+            </div>
           </div>
         </div>
       )}

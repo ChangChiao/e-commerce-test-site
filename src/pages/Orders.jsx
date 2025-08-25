@@ -4,6 +4,7 @@ export default function Orders() {
   const [orders, setOrders] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
+  const [selectedProduct, setSelectedProduct] = useState('all');
 
   useEffect(() => {
     // 生成隨機訂單資料
@@ -43,11 +44,16 @@ export default function Orders() {
     setOrders(generateOrders());
   }, []);
 
+  // 篩選訂單
+  const filteredOrders = selectedProduct === 'all' 
+    ? orders 
+    : orders.filter(order => order.items === selectedProduct);
+
   // 計算分頁資料
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentOrders = orders.slice(indexOfFirstItem, indexOfLastItem);
-  const totalPages = Math.ceil(orders.length / itemsPerPage);
+  const currentOrders = filteredOrders.slice(indexOfFirstItem, indexOfLastItem);
+  const totalPages = Math.ceil(filteredOrders.length / itemsPerPage);
 
   // 處理頁面切換
   const handlePageChange = (pageNumber) => {
@@ -58,6 +64,18 @@ export default function Orders() {
   const handleItemsPerPageChange = (e) => {
     setItemsPerPage(Number(e.target.value));
     setCurrentPage(1); // 重置到第一頁
+  };
+
+  // 處理商品篩選變更
+  const handleProductFilterChange = (e) => {
+    setSelectedProduct(e.target.value);
+    setCurrentPage(1); // 重置到第一頁
+  };
+
+  // 獲取所有不重複的商品項目
+  const getUniqueProducts = () => {
+    const products = new Set(orders.map(order => order.items));
+    return Array.from(products).sort();
   };
 
   // 生成頁碼數組
@@ -81,38 +99,54 @@ export default function Orders() {
 
   return (
     <div>
-      <h1 className="text-3xl font-bold text-gray-800 mb-8">訂單查詢</h1>
+      <h1 className="mb-8 text-3xl font-bold text-gray-800">訂單查詢</h1>
       
-      <div className="bg-white rounded-lg shadow overflow-hidden">
+      <div className="flex items-center mb-6 space-x-4">
+        <label className="text-sm text-gray-600">
+          商品篩選：
+          <select
+            value={selectedProduct}
+            onChange={handleProductFilterChange}
+            className="px-3 py-1 ml-2 text-sm border border-gray-300 rounded filter-select focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            <option value="all">全部商品</option>
+            {getUniqueProducts().map(product => (
+              <option key={product} value={product}>{product}</option>
+            ))}
+          </select>
+        </label>
+      </div>
+      
+      <div className="overflow-hidden bg-white rounded-lg shadow">
         <div className="overflow-x-auto">
           <table id="orders-table" className="min-w-full">
             <thead className="bg-gray-50">
               <tr>
-                <th className="order-header order-id-header px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase order-header order-id-header">
                   訂單編號
                 </th>
-                <th className="order-header buyer-name-header px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase order-header buyer-name-header">
                   買家姓名
                 </th>
-                <th className="order-header address-header px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase order-header address-header">
                   地址
                 </th>
-                <th className="order-header phone-header px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase order-header phone-header">
                   聯絡電話
                 </th>
-                <th className="order-header items-header px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase order-header items-header">
                   購買品項
                 </th>
-                <th className="order-header order-date-header px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase order-header order-date-header">
                   購買時間
                 </th>
-                <th className="order-header amount-header px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase order-header amount-header">
                   金額
                 </th>
-                <th className="order-header payment-method-header px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase order-header payment-method-header">
                   付款方式
                 </th>
-                <th className="order-header tax-id-header px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase order-header tax-id-header">
                   統一編號
                 </th>
               </tr>
@@ -120,28 +154,28 @@ export default function Orders() {
             <tbody className="bg-white divide-y divide-gray-200">
               {currentOrders.map((order) => (
                 <tr key={order.id} className="order-row hover:bg-gray-50" data-order-id={order.id}>
-                  <td className="order-data order-id px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <td className="px-6 py-4 text-sm text-gray-900 order-data order-id whitespace-nowrap">
                     #{order.id.toString().padStart(5, '0')}
                   </td>
-                  <td className="order-data buyer-name px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <td className="px-6 py-4 text-sm text-gray-900 order-data buyer-name whitespace-nowrap">
                     {order.buyerName}
                   </td>
-                  <td className="order-data address px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <td className="px-6 py-4 text-sm text-gray-900 order-data address whitespace-nowrap">
                     {order.address}
                   </td>
-                  <td className="order-data phone px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <td className="px-6 py-4 text-sm text-gray-900 order-data phone whitespace-nowrap">
                     {order.phone}
                   </td>
-                  <td className="order-data items px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <td className="px-6 py-4 text-sm text-gray-900 order-data items whitespace-nowrap">
                     {order.items}
                   </td>
-                  <td className="order-data order-date px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <td className="px-6 py-4 text-sm text-gray-900 order-data order-date whitespace-nowrap">
                     {order.orderDate}
                   </td>
-                  <td className="order-data amount px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <td className="px-6 py-4 text-sm text-gray-900 order-data amount whitespace-nowrap">
                     NT$ {order.amount.toLocaleString()}
                   </td>
-                  <td className="order-data payment-method px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <td className="px-6 py-4 text-sm text-gray-900 order-data payment-method whitespace-nowrap">
                     <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
                       order.paymentMethod === '信用卡' 
                         ? 'bg-blue-100 text-blue-800'
@@ -152,7 +186,7 @@ export default function Orders() {
                       {order.paymentMethod}
                     </span>
                   </td>
-                  <td className="order-data tax-id px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <td className="px-6 py-4 text-sm text-gray-900 order-data tax-id whitespace-nowrap">
                     {order.taxId}
                   </td>
                 </tr>
@@ -163,14 +197,14 @@ export default function Orders() {
       </div>
       
       <div className="mt-6 space-y-4">
-        <div className="flex justify-between items-center">
+        <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
             <label className="text-sm text-gray-600">
               每頁顯示：
               <select
                 value={itemsPerPage}
                 onChange={handleItemsPerPageChange}
-                className="ml-2 border border-gray-300 rounded px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="px-3 py-1 ml-2 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value={10}>10 筆</option>
                 <option value={20}>20 筆</option>
@@ -178,15 +212,15 @@ export default function Orders() {
               </select>
             </label>
             <div className="text-sm text-gray-600">
-              顯示 {indexOfFirstItem + 1}-{Math.min(indexOfLastItem, orders.length)} 筆，共 {orders.length} 筆訂單
+              顯示 {indexOfFirstItem + 1}-{Math.min(indexOfLastItem, filteredOrders.length)} 筆，共 {filteredOrders.length} 筆訂單
             </div>
           </div>
           <div className="text-sm text-gray-600">
-            總金額：NT$ {orders.reduce((sum, order) => sum + order.amount, 0).toLocaleString()}
+            總金額：NT$ {filteredOrders.reduce((sum, order) => sum + order.amount, 0).toLocaleString()}
           </div>
         </div>
         
-        <div className="flex justify-center items-center space-x-1">
+        <div className="flex items-center justify-center space-x-1">
           <button
             onClick={() => handlePageChange(currentPage - 1)}
             disabled={currentPage === 1}
@@ -203,7 +237,7 @@ export default function Orders() {
             <>
               <button
                 onClick={() => handlePageChange(1)}
-                className="px-3 py-1 rounded text-sm bg-white border border-gray-300 text-gray-700 hover:bg-gray-50"
+                className="px-3 py-1 text-sm text-gray-700 bg-white border border-gray-300 rounded hover:bg-gray-50"
               >
                 1
               </button>
@@ -230,7 +264,7 @@ export default function Orders() {
               {currentPage < totalPages - 3 && <span className="px-2 text-gray-500">...</span>}
               <button
                 onClick={() => handlePageChange(totalPages)}
-                className="px-3 py-1 rounded text-sm bg-white border border-gray-300 text-gray-700 hover:bg-gray-50"
+                className="px-3 py-1 text-sm text-gray-700 bg-white border border-gray-300 rounded hover:bg-gray-50"
               >
                 {totalPages}
               </button>
