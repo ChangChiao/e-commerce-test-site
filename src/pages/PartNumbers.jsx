@@ -11,7 +11,7 @@ export default function PartNumbers() {
     department: '',
     category: '',
     specification: '',
-    unit: ''
+    quantity: ''
   });
 
   useEffect(() => {
@@ -63,7 +63,7 @@ export default function PartNumbers() {
         department: part.department,
         category: part.category,
         specification: part.specification,
-        unit: part.unit
+        quantity: part.quantity
       });
     } else {
       setEditingPart(null);
@@ -74,7 +74,7 @@ export default function PartNumbers() {
         department: '',
         category: '',
         specification: '',
-        unit: ''
+        quantity: ''
       });
     }
     setIsModalOpen(true);
@@ -90,7 +90,7 @@ export default function PartNumbers() {
       department: '',
       category: '',
       specification: '',
-      unit: ''
+      quantity: ''
     });
   };
 
@@ -100,8 +100,7 @@ export default function PartNumbers() {
     }
   };
 
-  const categories = ['原材料', '半成品', '成品', '備品', '耗材'];
-  const units = ['PCS', 'SET', 'M', 'KG', 'L', 'BOX', 'ROLL'];
+  const categories = ['電子零件', '網通設備', '機構件', '五金零件', '電路板'];
 
   return (
     <div>
@@ -138,7 +137,7 @@ export default function PartNumbers() {
                 規格
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                單位
+                數量
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 操作
@@ -154,7 +153,7 @@ export default function PartNumbers() {
                 <td className="px-6 py-4 whitespace-nowrap">{part.department}</td>
                 <td className="px-6 py-4 whitespace-nowrap">{part.category}</td>
                 <td className="px-6 py-4 whitespace-nowrap">{part.specification}</td>
-                <td className="px-6 py-4 whitespace-nowrap">{part.unit}</td>
+                <td className="px-6 py-4 whitespace-nowrap">{part.quantity}</td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <button
                     onClick={() => openModal(part)}
@@ -181,8 +180,8 @@ export default function PartNumbers() {
       </div>
 
       {isModalOpen && (
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center">
-          <div className="bg-white rounded-lg p-8 w-full max-w-md">
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-8 w-full max-w-md shadow-xl">
             <h2 className="text-xl font-bold mb-4">
               {editingPart ? '編輯料號' : '新增料號'}
             </h2>
@@ -270,20 +269,17 @@ export default function PartNumbers() {
               </div>
               <div className="mb-4">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  單位
+                  數量
                 </label>
-                <select
-                  name="unit"
-                  value={formData.unit}
+                <input
+                  type="number"
+                  name="quantity"
+                  value={formData.quantity}
                   onChange={handleInputChange}
                   required
+                  min="0"
                   className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  <option value="">請選擇</option>
-                  {units.map(unit => (
-                    <option key={unit} value={unit}>{unit}</option>
-                  ))}
-                </select>
+                />
               </div>
               <div className="flex justify-end space-x-2">
                 <button
