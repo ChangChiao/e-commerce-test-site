@@ -9,6 +9,7 @@ export default function Sidebar() {
     { path: '/welcome', label: '歡迎頁面', icon: '🏠' },
     { path: '/users', label: '使用者管理', icon: '👥' },
     { path: '/orders', label: '訂單查詢', icon: '📦' },
+    { path: '/part-numbers', label: '料號管理', icon: '🔢' },
   ];
 
   return (

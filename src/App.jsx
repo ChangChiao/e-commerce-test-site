@@ -5,6 +5,7 @@ import Layout from './components/Layout';
 import Welcome from './pages/Welcome';
 import Users from './pages/Users';
 import Orders from './pages/Orders';
+import PartNumbers from './pages/PartNumbers';
 
 function App() {
   return (
@@ -17,6 +18,7 @@ function App() {
             <Route path="welcome" element={<Welcome />} />
             <Route path="users" element={<Users />} />
             <Route path="orders" element={<Orders />} />
+            <Route path="part-numbers" element={<PartNumbers />} />
           </Route>
           <Route path="*" element={<Navigate to="/welcome" replace />} />
         </Routes>
